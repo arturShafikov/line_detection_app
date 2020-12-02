@@ -12,7 +12,15 @@ public:
     cv::Mat perform_line_detection(const cv::Mat &input_image);
 
 private:
-    cv::Mat input_image;
+    int min_red_hue_1;
+    int min_red_hue_2;
+    int red_hue_range;
+    int min_saturation;
+    int max_saturation;
+    int min_value;
+    int max_value;
+
+    cv::Mat generate_red_mask(const cv::Mat &hsv_image);
 };
 
 #endif // LINEDETECTOR_H

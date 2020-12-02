@@ -42,7 +42,7 @@ void MainWindow::choose_image()
             QFileDialog::getOpenFileName(this,
                                          tr("Upload Image"),
                                          "/home",
-                                         tr("Image files (*.jpg *.JPG *.jpeg *.JPEG)"));
+                                         tr("Image files (*.bmp)"));
     this->image_name = file_name.toUtf8().constData();
     this->input_image = cv::imread(this->image_name);
     display_image(ui->input_image_label, this->input_image);

@@ -2,7 +2,13 @@
 
 LineDetector::LineDetector()
 {
-
+    this->min_red_hue_1 = 0;
+    this->min_red_hue_2 = 170;
+    this->red_hue_range = 10;
+    this->min_saturation = 120;
+    this->max_saturation = 255;
+    this->min_value = 70;
+    this->max_value = 255;
 }
 
 cv::Mat LineDetector::perform_line_detection(const cv::Mat &input_image)
@@ -10,25 +16,44 @@ cv::Mat LineDetector::perform_line_detection(const cv::Mat &input_image)
     cv::Mat hsv_image;
     cv::cvtColor(input_image, hsv_image, CV_BGR2HSV);
 
-    std::vector<cv::Mat> hsv_channels;
-    cv::split(hsv_image, hsv_channels);
+    cv::Mat red_mask = this->generate_red_mask(hsv_image);
 
-    int red_hue_value = 0;
-    int red_hue_range = 5;
-    cv::Mat red_hue_mask;
-    cv::inRange(hsv_channels.at(0),
-                red_hue_value-red_hue_range,
-                red_hue_value+red_hue_range,
-                red_hue_mask);
+    cv::Mat kernel_3 = cv::Mat::ones(3,3, CV_32F);
+    cv::Mat kernel_5 = cv::Mat::ones(5,5, CV_32F);
+    cv::morphologyEx(red_mask, red_mask, cv::MORPH_OPEN, kernel_3);
+    cv::morphologyEx(red_mask, red_mask, cv::MORPH_DILATE, kernel_3);
+    cv::morphologyEx(red_mask, red_mask, cv::MORPH_CLOSE, kernel_5);
 
-    int min_saturation = 90;
-    int min_value = 90;
-    cv::Mat saturation_mask = hsv_channels.at(1) > min_saturation;
-    cv::Mat value_mask = hsv_channels.at(2) > min_value;
+    cv::Mat blurred_image;
+    cv::medianBlur(red_mask, blurred_image, 17);
+    cv::morphologyEx(blurred_image, blurred_image, cv::MORPH_DILATE, kernel_3);
+    cv::morphologyEx(blurred_image, blurred_image, cv::MORPH_CLOSE, kernel_5);
 
-    cv::Mat red_mask = (red_hue_mask & saturation_mask) & value_mask;
     cv::Mat bgr_red_mask;
-    cv::cvtColor(red_mask, bgr_red_mask, CV_GRAY2BGR);
-//    emit line_detected(bgr_red_mask);
+    cv::cvtColor(blurred_image, bgr_red_mask, CV_GRAY2BGR);
+
     return bgr_red_mask;
+}
+
+cv::Mat LineDetector::generate_red_mask(const cv::Mat &hsv_image)
+{
+    cv::Mat red_mask_1;
+    cv::Mat red_mask_2;
+    cv::inRange(hsv_image,
+                cv::Scalar(this->min_red_hue_1,
+                           this->min_saturation,
+                           this->min_value),
+                cv::Scalar(this->min_red_hue_1+this->red_hue_range,
+                           this->max_saturation,
+                           this->max_value),
+                red_mask_1);
+    cv::inRange(hsv_image,
+                cv::Scalar(this->min_red_hue_2,
+                           this->min_saturation,
+                           this->min_value),
+                cv::Scalar(this->min_red_hue_2+this->red_hue_range,
+                           this->max_saturation,
+                           this->max_value),
+                red_mask_2);
+    return red_mask_1 + red_mask_2;
 }

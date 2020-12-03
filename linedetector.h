@@ -13,7 +13,7 @@ public:
 
 private:
     int min_red_hue_1;
-    int min_red_hue_2;
+    int max_red_hue_2;
     int red_hue_range;
     int min_saturation;
     int max_saturation;

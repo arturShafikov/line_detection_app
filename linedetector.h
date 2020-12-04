@@ -20,7 +20,8 @@ private:
     int min_value;
     int max_value;
 
-    cv::Mat generate_red_mask(const cv::Mat &hsv_image);
+    cv::Mat detect_red_color(const cv::Mat &input_image);
+    cv::Mat draw_lines(const cv::Mat &input_image, const std::vector<cv::Vec4i> &lines);
 };
 
 #endif // LINEDETECTOR_H

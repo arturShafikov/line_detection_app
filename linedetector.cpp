@@ -6,14 +6,29 @@ LineDetector::LineDetector()
 
 cv::Mat LineDetector::perform_line_detection(const cv::Mat &input_image)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     //Detecting red color
     cv::Mat red_mask = this->detect_red_color(input_image);
 
     //Detecting lines
     std::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(red_mask, lines, 1, CV_PI/180, 50, 50, 10);
+    cv::HoughLinesP(red_mask, lines, 1, CV_PI/180, 50, 50, 1);
+
+    this->time_of_line_detection = timer.elapsed();
 
     return this->draw_lines(input_image, lines);
+}
+
+int LineDetector::getTime_of_line_detection() const
+{
+    return time_of_line_detection;
+}
+
+int LineDetector::getTime_of_line_visualization() const
+{
+    return time_of_line_visualization;
 }
 
 cv::Mat LineDetector::detect_red_color(const cv::Mat &input_image)
@@ -37,6 +52,9 @@ cv::Mat LineDetector::detect_red_color(const cv::Mat &input_image)
 cv::Mat LineDetector::draw_lines(const cv::Mat &input_image,
                                  const std::vector<cv::Vec4i> &lines)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     //Darkening the image
     cv::Mat lined_image, hsv_image;
     std::vector<cv::Mat> split;
@@ -52,6 +70,8 @@ cv::Mat LineDetector::draw_lines(const cv::Mat &input_image,
         cv::line(lined_image, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]),
                 cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
     }
+
+    this->time_of_line_visualization = timer.elapsed();
 
     return lined_image;
 }

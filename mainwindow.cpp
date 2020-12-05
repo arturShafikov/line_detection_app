@@ -52,6 +52,12 @@ void MainWindow::detect_line()
 {
     this->display_image(ui->output_image_label,
                         this->line_detector.perform_line_detection(this->input_image));
+    this->ui->time_of_line_detection_line_edit->setText(
+                QString::number(this->line_detector.getTime_of_line_detection()));
+    this->ui->time_of_line_detection_and_visualization_line_edit->setText(
+                QString::number(
+                    this->line_detector.getTime_of_line_visualization() +
+                    this->line_detector.getTime_of_line_detection()));
 }
 
 cv::Mat MainWindow::resize_displayed_image(const cv::Mat &original_image)

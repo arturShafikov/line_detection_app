@@ -35,6 +35,8 @@ if(ANDROID)
     mainwindow.h
     linedetector.cpp
     linedetector.h
+    pointextractor.cpp
+    pointextractor.h
     mainwindow.ui
   )
 else()
@@ -44,6 +46,8 @@ else()
     mainwindow.h
     linedetector.cpp
     linedetector.h
+    pointextractor.cpp
+    pointextractor.h
     mainwindow.ui
   )
 endif()

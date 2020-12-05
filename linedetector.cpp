@@ -14,7 +14,7 @@ cv::Mat LineDetector::perform_line_detection(const cv::Mat &input_image)
 
     //Detecting lines
     std::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(red_mask, lines, 1, CV_PI/180, 50, 50, 1);
+    cv::HoughLinesP(red_mask, lines, 1, CV_PI/180, 50, 50, 10);
 
     this->time_of_line_detection = timer.elapsed();
 

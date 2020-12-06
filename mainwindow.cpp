@@ -24,10 +24,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::display_image(QLabel *image_label, const cv::Mat &displayed_image)
 {
-    if (displayed_image.empty()) {
-        image_label->setText("Unable to read the image!");
-        return;
-    }
 
     cv::Mat resized_image = resize_displayed_image(displayed_image);
 
@@ -37,7 +33,6 @@ void MainWindow::display_image(QLabel *image_label, const cv::Mat &displayed_ima
                          resized_image.step,
                          QImage::Format_BGR888);
     image_label->setPixmap(QPixmap::fromImage(image_display));
-    ui->detect_line_button->setEnabled(true);
 }
 
 void MainWindow::choose_image()
@@ -49,9 +44,18 @@ void MainWindow::choose_image()
                                          tr("Image files (*.bmp)"));
     if (file_name.isEmpty())
         return;
+
     this->image_name = file_name.toUtf8().constData();
     this->input_image = cv::imread(this->image_name);
+
+    if (this->input_image.empty())
+        return;
+
     display_image(ui->input_image_label, this->input_image);
+    this->ui->detect_line_button->setDisabled(false);
+    this->ui->extract_points_button->setDisabled(true);
+    this->ui->file_writing_progress_bar->hide();
+    this->ui->output_image_label->clear();
 }
 
 void MainWindow::detect_line()
@@ -65,6 +69,7 @@ void MainWindow::detect_line()
                     this->line_detector.getTime_of_line_visualization() +
                     this->line_detector.getTime_of_line_detection()));
     this->ui->extract_points_button->setDisabled(false);
+    this->ui->file_writing_progress_bar->hide();
 }
 
 void MainWindow::extract_points()

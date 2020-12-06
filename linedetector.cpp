@@ -14,7 +14,7 @@ cv::Mat LineDetector::perform_line_detection(const cv::Mat &input_image)
 
     //Detecting lines
     std::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(red_mask, lines, 1, CV_PI/180, 50, 50, 10);
+    cv::HoughLinesP(red_mask, lines, 1, CV_PI/180, 100, 5, 5);
 
     this->time_of_line_detection = timer.elapsed();
 
@@ -26,35 +26,31 @@ int LineDetector::getTime_of_line_detection() const
     return time_of_line_detection;
 }
 
-int LineDetector::getTime_of_line_visualization() const
-{
-    return time_of_line_visualization;
-}
-
 cv::Mat LineDetector::detect_red_color(const cv::Mat &input_image)
 {
+    cv::Mat tmp_image = input_image.clone();
+
+    cv::GaussianBlur(input_image, tmp_image, cv::Size(3,3), 0);
+
     std::vector<cv::Mat> split;
-    cv::split(input_image, split);
+    cv::split(tmp_image, split);
+    tmp_image = split[2] - split[1];
 
-    cv::Mat red_mask;
-    red_mask = split[2] - split[1];
-    cv::adaptiveThreshold(red_mask, red_mask, 255,
-                          cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV, 15, 12);
+    cv::Mat sorted_idx;
+    cv::sortIdx(tmp_image, sorted_idx, cv::SORT_EVERY_COLUMN+cv::SORT_DESCENDING);
 
-    cv::Mat kernel_3 = cv::Mat::ones(3,3, CV_32F);
-    cv::morphologyEx(red_mask, red_mask, cv::MORPH_CLOSE, kernel_3);
-    cv::morphologyEx(red_mask, red_mask, cv::MORPH_DILATE, kernel_3);
-    cv::morphologyEx(red_mask, red_mask, cv::MORPH_OPEN, kernel_3);
+    cv::Mat output = cv::Mat::zeros(tmp_image.rows, tmp_image.cols, CV_8UC1);
 
-    return red_mask;
+    for (int i = 0; i < sorted_idx.cols; i++) {
+        cv::circle(output, cv::Point(i, sorted_idx.at<int>(0,i)), 2, cv::Scalar(255), -1);
+    }
+
+    return output;
 }
 
 cv::Mat LineDetector::draw_lines(const cv::Mat &input_image,
                                  const std::vector<cv::Vec4i> &lines)
 {
-    QElapsedTimer timer;
-    timer.start();
-
     //Darkening the image
     cv::Mat lined_image, hsv_image;
     std::vector<cv::Mat> split;
@@ -68,10 +64,8 @@ cv::Mat LineDetector::draw_lines(const cv::Mat &input_image,
     for (size_t i = 0; i < lines.size(); i++) {
         cv::Vec4i l = lines[i];
         cv::line(lined_image, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]),
-                cv::Scalar(0, 0, 255), 3, cv::LINE_AA);
+                cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
     }
-
-    this->time_of_line_visualization = timer.elapsed();
 
     return lined_image;
 }

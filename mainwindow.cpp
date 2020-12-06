@@ -41,12 +41,13 @@ void MainWindow::choose_image()
             QFileDialog::getOpenFileName(this,
                                          tr("Upload Image"),
                                          "/home",
-                                         tr("Image files (*.bmp)"));
+                                         tr("Image files (*.JPEG)"),
+                                         nullptr,
+                                         QFileDialog::DontUseNativeDialog);
     if (file_name.isEmpty())
         return;
 
-    this->image_name = file_name.toUtf8().constData();
-    this->input_image = cv::imread(this->image_name);
+    this->input_image = cv::imread(file_name.toUtf8().constData());
 
     if (this->input_image.empty())
         return;
@@ -64,10 +65,6 @@ void MainWindow::detect_line()
     this->display_image(ui->output_image_label, this->output_image);
     this->ui->time_of_line_detection_line_edit->setText(
                 QString::number(this->line_detector.getTime_of_line_detection()));
-    this->ui->time_of_line_detection_and_visualization_line_edit->setText(
-                QString::number(
-                    this->line_detector.getTime_of_line_visualization() +
-                    this->line_detector.getTime_of_line_detection()));
     this->ui->extract_points_button->setDisabled(false);
     this->ui->file_writing_progress_bar->hide();
 }
@@ -77,11 +74,16 @@ void MainWindow::extract_points()
     std::vector<cv::Point> laser_points =
             this->point_extractor.extract_points(this->output_image);
 
+    if (laser_points.empty())
+        return;
+
     QString file_name = QFileDialog::
             QFileDialog::getSaveFileName(this,
                                          tr("Save point list file"),
                                          "",
-                                         tr("Text file (*.txt)"));
+                                         tr("Text file (*.txt)"),
+                                         nullptr,
+                                         QFileDialog::DontUseNativeDialog);
 
     if (file_name.isEmpty())
         return;
@@ -94,6 +96,7 @@ void MainWindow::extract_points()
     int progress_bar_value = 0;
     this->ui->file_writing_progress_bar->setValue(0);
     this->ui->file_writing_progress_bar->show();
+
 
     QTextStream out(&points_file);
     for (const cv::Point &p : laser_points) {

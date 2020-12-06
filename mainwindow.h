@@ -28,7 +28,6 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-    std::string image_name;
     cv::Mat input_image;
     cv::Mat output_image;
     LineDetector line_detector;

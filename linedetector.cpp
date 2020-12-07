@@ -4,7 +4,7 @@ LineDetector::LineDetector()
 {
 }
 
-void LineDetector::perform_line_detection(ImageData &image_data)
+void LineDetector::perform_line_detection(ImageData &image_data, int sensitivity)
 {
     QElapsedTimer timer;
     timer.start();
@@ -13,7 +13,7 @@ void LineDetector::perform_line_detection(ImageData &image_data)
     cv::Mat red_mask = this->detect_red_color(image_data.get_input_image());
 
     //Detecting horizontal lines
-    image_data.set_laser_points(this->detect_lines(red_mask));
+    image_data.set_laser_points(this->detect_lines(red_mask, sensitivity));
 
     this->time_of_line_detection = timer.elapsed();
 }
@@ -45,9 +45,9 @@ cv::Mat LineDetector::detect_red_color(const cv::Mat &input_image)
     return output;
 }
 
-std::vector<cv::Point> LineDetector::detect_lines(cv::Mat &red_mask)
+std::vector<cv::Point> LineDetector::detect_lines(cv::Mat &red_mask, int sensitivity)
 {
-    int horizontal_size = red_mask.cols / 30;
+    int horizontal_size = red_mask.cols / sensitivity;
     cv::Mat horizontal_elem = cv::getStructuringElement(cv::MORPH_RECT,
                                                         cv::Size(horizontal_size, 1));
     cv::erode(red_mask, red_mask, horizontal_elem, cv::Point(-1, -1));

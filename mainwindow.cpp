@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->detect_line_button->setDisabled(true);
     ui->extract_points_button->setDisabled(true);
     ui->file_writing_progress_bar->hide();
+    ui->sensitivity_slider->setMinimum(30);
+    ui->sensitivity_slider->setDisabled(true);
     connect(ui->upload_image_button, SIGNAL(clicked()),
             this, SLOT(choose_image()));
     connect(ui->detect_line_button, SIGNAL(clicked()),
@@ -54,6 +56,8 @@ void MainWindow::choose_image()
 
     display_image(ui->input_image_label, this->image_data.get_input_image());
     this->ui->detect_line_button->setDisabled(false);
+    this->ui->sensitivity_slider->setMaximum(image_data.get_input_image().cols/7);
+    this->ui->sensitivity_slider->setDisabled(false);
     this->ui->extract_points_button->setDisabled(true);
     this->ui->file_writing_progress_bar->hide();
     this->ui->output_image_label->clear();
@@ -61,7 +65,8 @@ void MainWindow::choose_image()
 
 void MainWindow::detect_line()
 {
-    this->line_detector.perform_line_detection(this->image_data);
+    this->line_detector.perform_line_detection(this->image_data,
+                                               this->ui->sensitivity_slider->value());
     this->display_image(ui->output_image_label, this->image_data.get_output_image());
     this->ui->time_of_line_detection_line_edit->setText(
                 QString::number(this->line_detector.getTime_of_line_detection()));
@@ -78,7 +83,7 @@ void MainWindow::extract_points()
     QString file_name = QFileDialog::
             QFileDialog::getSaveFileName(this,
                                          tr("Save point list file"),
-                                         "",
+                                         "/home",
                                          tr("Text file (*.txt)"),
                                          nullptr,
                                          QFileDialog::DontUseNativeDialog);

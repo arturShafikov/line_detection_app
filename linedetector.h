@@ -9,7 +9,7 @@ class LineDetector
 {
 public:
     LineDetector();
-    void perform_line_detection(ImageData &image_data);
+    void perform_line_detection(ImageData &image_data, int sensitivity);
 
     int getTime_of_line_detection() const;
 
@@ -17,7 +17,7 @@ private:
     int time_of_line_detection = 0;
 
     cv::Mat detect_red_color(const cv::Mat &input_image);
-    std::vector<cv::Point> detect_lines(cv::Mat &red_mask);
+    std::vector<cv::Point> detect_lines(cv::Mat &red_mask, int sensitivity);
 };
 
 #endif // LINEDETECTOR_H

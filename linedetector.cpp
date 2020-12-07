@@ -4,21 +4,18 @@ LineDetector::LineDetector()
 {
 }
 
-cv::Mat LineDetector::perform_line_detection(const cv::Mat &input_image)
+void LineDetector::perform_line_detection(ImageData &image_data)
 {
     QElapsedTimer timer;
     timer.start();
 
     //Detecting red color
-    cv::Mat red_mask = this->detect_red_color(input_image);
+    cv::Mat red_mask = this->detect_red_color(image_data.get_input_image());
 
-    //Detecting lines
-    std::vector<cv::Vec4i> lines;
-    cv::HoughLinesP(red_mask, lines, 1, CV_PI/180, 100, 5, 5);
+    //Detecting horizontal lines
+    image_data.set_laser_points(this->detect_lines(red_mask));
 
     this->time_of_line_detection = timer.elapsed();
-
-    return this->draw_lines(input_image, lines);
 }
 
 int LineDetector::getTime_of_line_detection() const
@@ -48,24 +45,16 @@ cv::Mat LineDetector::detect_red_color(const cv::Mat &input_image)
     return output;
 }
 
-cv::Mat LineDetector::draw_lines(const cv::Mat &input_image,
-                                 const std::vector<cv::Vec4i> &lines)
+std::vector<cv::Point> LineDetector::detect_lines(cv::Mat &red_mask)
 {
-    //Darkening the image
-    cv::Mat lined_image, hsv_image;
-    std::vector<cv::Mat> split;
-    cv::cvtColor(input_image, hsv_image, CV_BGR2HSV);
-    cv::split(hsv_image, split);
-    split[2] = split[2]*0.2;
-    cv::merge(split,hsv_image);
-    cv::cvtColor(hsv_image, lined_image, CV_HSV2BGR);
+    int horizontal_size = red_mask.cols / 30;
+    cv::Mat horizontal_elem = cv::getStructuringElement(cv::MORPH_RECT,
+                                                        cv::Size(horizontal_size, 1));
+    cv::erode(red_mask, red_mask, horizontal_elem, cv::Point(-1, -1));
+    cv::dilate(red_mask, red_mask, horizontal_elem, cv::Point(-1, -1));
 
-    //Drawing lines
-    for (size_t i = 0; i < lines.size(); i++) {
-        cv::Vec4i l = lines[i];
-        cv::line(lined_image, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]),
-                cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
-    }
+    std::vector<cv::Point> laser_points;
+    cv::findNonZero(red_mask, laser_points);
 
-    return lined_image;
+    return laser_points;
 }

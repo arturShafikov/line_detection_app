@@ -7,7 +7,7 @@
 #include <QTextStream>
 #include <opencv2/opencv.hpp>
 #include <linedetector.h>
-#include <pointextractor.h>
+#include <imagedata.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,10 +28,8 @@ public slots:
 
 private:
     Ui::MainWindow *ui;
-    cv::Mat input_image;
-    cv::Mat output_image;
     LineDetector line_detector;
-    PointExtractor point_extractor;
+    ImageData image_data;
 
     cv::Mat resize_displayed_image(const cv::Mat &original_image);
     void display_image(QLabel *image_label, const cv::Mat &displayed_image);

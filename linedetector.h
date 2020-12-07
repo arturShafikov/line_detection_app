@@ -3,12 +3,13 @@
 
 #include <QElapsedTimer>
 #include <opencv2/opencv.hpp>
+#include <imagedata.h>
 
 class LineDetector
 {
 public:
     LineDetector();
-    cv::Mat perform_line_detection(const cv::Mat &input_image);
+    void perform_line_detection(ImageData &image_data);
 
     int getTime_of_line_detection() const;
 
@@ -16,7 +17,7 @@ private:
     int time_of_line_detection = 0;
 
     cv::Mat detect_red_color(const cv::Mat &input_image);
-    cv::Mat draw_lines(const cv::Mat &input_image, const std::vector<cv::Vec4i> &lines);
+    std::vector<cv::Point> detect_lines(cv::Mat &red_mask);
 };
 
 #endif // LINEDETECTOR_H

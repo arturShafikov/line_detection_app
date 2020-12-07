@@ -47,12 +47,12 @@ void MainWindow::choose_image()
     if (file_name.isEmpty())
         return;
 
-    this->input_image = cv::imread(file_name.toUtf8().constData());
+    this->image_data.set_input_image(cv::imread(file_name.toUtf8().constData()));
 
-    if (this->input_image.empty())
+    if (this->image_data.get_input_image().empty())
         return;
 
-    display_image(ui->input_image_label, this->input_image);
+    display_image(ui->input_image_label, this->image_data.get_input_image());
     this->ui->detect_line_button->setDisabled(false);
     this->ui->extract_points_button->setDisabled(true);
     this->ui->file_writing_progress_bar->hide();
@@ -61,8 +61,8 @@ void MainWindow::choose_image()
 
 void MainWindow::detect_line()
 {
-    this->output_image = this->line_detector.perform_line_detection(this->input_image);
-    this->display_image(ui->output_image_label, this->output_image);
+    this->line_detector.perform_line_detection(this->image_data);
+    this->display_image(ui->output_image_label, this->image_data.get_output_image());
     this->ui->time_of_line_detection_line_edit->setText(
                 QString::number(this->line_detector.getTime_of_line_detection()));
     this->ui->extract_points_button->setDisabled(false);
@@ -71,10 +71,8 @@ void MainWindow::detect_line()
 
 void MainWindow::extract_points()
 {
-    std::vector<cv::Point> laser_points =
-            this->point_extractor.extract_points(this->output_image);
 
-    if (laser_points.empty())
+    if (this->image_data.get_laser_points().empty())
         return;
 
     QString file_name = QFileDialog::
@@ -92,14 +90,14 @@ void MainWindow::extract_points()
     if(!points_file.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
 
-    this->ui->file_writing_progress_bar->setRange(0, laser_points.size());
+    this->ui->file_writing_progress_bar->setRange(0, this->image_data.get_laser_points().size());
     int progress_bar_value = 0;
     this->ui->file_writing_progress_bar->setValue(0);
     this->ui->file_writing_progress_bar->show();
 
 
     QTextStream out(&points_file);
-    for (const cv::Point &p : laser_points) {
+    for (const cv::Point &p : this->image_data.get_laser_points()) {
         out << p.x << " " << p.y << "\n";
         progress_bar_value++;
         this->ui->file_writing_progress_bar->setValue(progress_bar_value);
